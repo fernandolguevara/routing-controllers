@@ -1,4 +1,4 @@
-import {Gulpclass, MergedTask, SequenceTask, Task} from "gulpclass";
+import { Gulpclass, MergedTask, SequenceTask, Task } from "@propellerheads/gulpclass";
 
 const gulp = require("gulp");
 const del = require("del");
@@ -14,7 +14,7 @@ const istanbul = require("gulp-istanbul");
 const remapIstanbul = require("remap-istanbul/lib/gulpRemapIstanbul");
 
 @Gulpclass()
-export class Gulpfile {
+class Gulpfile {
 
     // -------------------------------------------------------------------------
     // General tasks
@@ -175,7 +175,7 @@ export class Gulpfile {
             "./build/compiled/test/functional/**/*.js",
             "./build/compiled/test/issues/**/*.js",
         ])
-            .pipe(mocha())
+            .pipe(mocha({ inspect: true }))
             .pipe(istanbul.writeReports());
     }
 

@@ -12,6 +12,7 @@ import { isPromiseLike } from "../../util/isPromiseLike";
 import { getFromContainer } from "../../container";
 import { AuthorizationRequiredError } from "../../error/AuthorizationRequiredError";
 import { NotFoundError, getMetadataArgsStorage } from "../../index";
+import { NextFunction } from "express";
 
 const cookie = require("cookie");
 const templateUrl = require("template-url");
@@ -98,7 +99,7 @@ export class ExpressDriver extends BaseDriver {
         }
 
         if (actionMetadata.isAuthorizedUsed) {
-            defaultMiddlewares.push((request: any, response: any, next: Function) => {
+            const authHandler = (request: any, response: any, next: Function) => {
                 if (!this.authorizationChecker)
                     throw new AuthorizationCheckerNotDefinedError();
 
@@ -126,7 +127,9 @@ export class ExpressDriver extends BaseDriver {
                 } catch (error) {
                     this.handleError(error, actionMetadata, action);
                 }
-            });
+            };
+
+            defaultMiddlewares.push(authHandler);
         }
 
         if (actionMetadata.isFileUsed || actionMetadata.isFilesUsed) {
@@ -162,13 +165,27 @@ export class ExpressDriver extends BaseDriver {
             return executeCallback({ request, response, next });
         };
 
-        // finally register action in express
-        this.express[actionMetadata.type.toLowerCase()](...[
-            route,
+        console.log("new route: ", route);
+
+        const asd = [
             ...beforeMiddlewares,
             ...defaultMiddlewares,
             routeHandler,
             ...afterMiddlewares
+        ].map((middleware: any) => {
+            return (req: any, res: any, next: NextFunction) => {
+                console.log("executing ", middleware.name);
+                const result = middleware(req, res, next);
+                console.log("end ", middleware.name);
+                console.log("result ", result);
+                return result;
+            };
+        });
+
+        // finally register action in express
+        this.express[actionMetadata.type.toLowerCase()](...[
+            route,
+            ...asd
         ]);
     }
 
@@ -239,9 +256,18 @@ export class ExpressDriver extends BaseDriver {
      */
     handleSuccess(result: any, action: ActionMetadata, options: Action): void {
 
+        const callNext = (err?: any) => {
+            // Stop layers execution if response is finished
+            if (options.response.headersSent) {
+                options.request.method = "XX" + options.request.method;
+            }
+
+            options.next(err);
+        };
+
         // if the action returned the response object itself, short-circuits
         if (result && result === options.response) {
-            options.next();
+            callNext();
             return;
         }
 
@@ -283,22 +309,22 @@ export class ExpressDriver extends BaseDriver {
                 options.response.redirect(action.redirect);
             }
 
-            options.next();
+            callNext();
         }
         else if (action.renderedTemplate) { // if template is set then render it
             const renderOptions = result && result instanceof Object ? result : {};
 
             options.response.render(action.renderedTemplate, renderOptions, (err: any, html: string) => {
                 if (err && action.isJsonTyped) {
-                    return options.next(err);
+                    return callNext(err);
 
                 } else if (err && !action.isJsonTyped) {
-                    return options.next(err);
+                    return callNext(err);
 
                 } else if (html) {
                     options.response.send(html);
                 }
-                options.next();
+                callNext();
             });
         }
         else if (result === undefined) { // throw NotFoundError on undefined response
@@ -309,7 +335,7 @@ export class ExpressDriver extends BaseDriver {
                 } else {
                     options.response.send();
                 }
-                options.next();
+                callNext();
 
             } else {
                 throw new NotFoundError();
@@ -321,7 +347,7 @@ export class ExpressDriver extends BaseDriver {
             } else {
                 options.response.send(null);
             }
-            options.next();
+            callNext();
         }
         else if (result instanceof Buffer) { // check if it's binary data (Buffer)
             options.response.end(result, "binary");
@@ -338,17 +364,8 @@ export class ExpressDriver extends BaseDriver {
             } else {
                 options.response.send(result);
             }
-            // Stop layers execution if response is finished
-            try {
-                const globalAfter = getMetadataArgsStorage().middlewares.some(m => m.global && m.type === "after");
-                let afterActions = action.uses.some((use) => use.afterAction) || globalAfter;
 
-                if (!options.response.headersSent || afterActions) {
-                    options.next();
-                }
-            } catch (err) {
-                console.error(err);
-            }
+            callNext();
         }
     }
 

@@ -1,14 +1,14 @@
-import {Action} from "./Action";
-import {ActionMetadata} from "./metadata/ActionMetadata";
-import {ActionParameterHandler} from "./ActionParameterHandler";
-import {BaseDriver} from "./driver/BaseDriver";
-import {InterceptorInterface} from "./InterceptorInterface";
-import {InterceptorMetadata} from "./metadata/InterceptorMetadata";
-import {MetadataBuilder} from "./metadata-builder/MetadataBuilder";
-import {RoutingControllersOptions} from "./RoutingControllersOptions";
-import {getFromContainer} from "./container";
-import {isPromiseLike} from "./util/isPromiseLike";
-import {runInSequence} from "./util/runInSequence";
+import { Action } from "./Action";
+import { ActionMetadata } from "./metadata/ActionMetadata";
+import { ActionParameterHandler } from "./ActionParameterHandler";
+import { BaseDriver } from "./driver/BaseDriver";
+import { InterceptorInterface } from "./InterceptorInterface";
+import { InterceptorMetadata } from "./metadata/InterceptorMetadata";
+import { MetadataBuilder } from "./metadata-builder/MetadataBuilder";
+import { RoutingControllersOptions } from "./RoutingControllersOptions";
+import { getFromContainer } from "./container";
+import { isPromiseLike } from "./util/isPromiseLike";
+import { runInSequence } from "./util/runInSequence";
 
 /**
  * Registers controllers and middlewares in the given server framework.
@@ -91,7 +91,7 @@ export class RoutingControllers<T extends BaseDriver> {
     /**
      * Registers post-execution middlewares in the driver.
      */
-    registerMiddlewares(type: "before"|"after", classes?: Function[]): this {
+    registerMiddlewares(type: "before" | "after", classes?: Function[]): this {
         this.metadataBuilder
             .buildMiddlewareMetadata(classes)
             .filter(middleware => middleware.global && middleware.type === type)
@@ -144,7 +144,7 @@ export class RoutingControllers<T extends BaseDriver> {
                 });
         } else {
 
-            if (interceptorFns) {
+            if (interceptorFns && interceptorFns.length > 0) {
                 const awaitPromise = runInSequence(interceptorFns, interceptorFn => {
                     const interceptedResult = interceptorFn(options, result);
                     if (isPromiseLike(interceptedResult)) {

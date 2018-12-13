@@ -1,12 +1,12 @@
 import "reflect-metadata";
-import {JsonController} from "../../src/decorator/JsonController";
-import {createExpressServer, getMetadataArgsStorage} from "../../src/index";
-import {Get} from "../../src/decorator/Get";
-import {Middleware} from "../../src/decorator/Middleware";
-import {UseAfter} from "../../src/decorator/UseAfter";
-import {ExpressErrorMiddlewareInterface} from "../../src/driver/express/ExpressErrorMiddlewareInterface";
-import {NotFoundError} from "../../src/http-error/NotFoundError";
-import {HttpError} from "../../src/http-error/HttpError";
+import { JsonController } from "../../src/decorator/JsonController";
+import { createExpressServer, getMetadataArgsStorage } from "../../src/index";
+import { Get } from "../../src/decorator/Get";
+import { Middleware } from "../../src/decorator/Middleware";
+import { UseAfter } from "../../src/decorator/UseAfter";
+import { ExpressErrorMiddlewareInterface } from "../../src/driver/express/ExpressErrorMiddlewareInterface";
+import { NotFoundError } from "../../src/http-error/NotFoundError";
+import { HttpError } from "../../src/http-error/HttpError";
 const chakram = require("chakram");
 const expect = chakram.expect;
 

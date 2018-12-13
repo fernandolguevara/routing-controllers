@@ -1,18 +1,18 @@
-import { UseMetadata } from "../../metadata/UseMetadata";
-import { MiddlewareMetadata } from "../../metadata/MiddlewareMetadata";
-import { ActionMetadata } from "../../metadata/ActionMetadata";
+import { NextFunction, Router } from "express";
 import { Action } from "../../Action";
-import { ParamMetadata } from "../../metadata/ParamMetadata";
-import { BaseDriver } from "../BaseDriver";
-import { ExpressMiddlewareInterface } from "./ExpressMiddlewareInterface";
-import { ExpressErrorMiddlewareInterface } from "./ExpressErrorMiddlewareInterface";
+import { getFromContainer } from "../../container";
 import { AccessDeniedError } from "../../error/AccessDeniedError";
 import { AuthorizationCheckerNotDefinedError } from "../../error/AuthorizationCheckerNotDefinedError";
-import { isPromiseLike } from "../../util/isPromiseLike";
-import { getFromContainer } from "../../container";
 import { AuthorizationRequiredError } from "../../error/AuthorizationRequiredError";
-import { NotFoundError, getMetadataArgsStorage } from "../../index";
-import { NextFunction } from "express";
+import { NotFoundError } from "../../index";
+import { ActionMetadata } from "../../metadata/ActionMetadata";
+import { MiddlewareMetadata } from "../../metadata/MiddlewareMetadata";
+import { ParamMetadata } from "../../metadata/ParamMetadata";
+import { UseMetadata } from "../../metadata/UseMetadata";
+import { isPromiseLike } from "../../util/isPromiseLike";
+import { BaseDriver } from "../BaseDriver";
+import { ExpressErrorMiddlewareInterface } from "./ExpressErrorMiddlewareInterface";
+import { ExpressMiddlewareInterface } from "./ExpressMiddlewareInterface";
 
 const cookie = require("cookie");
 const templateUrl = require("template-url");
@@ -192,11 +192,30 @@ export class ExpressDriver extends BaseDriver {
             }
         });
 
-        // finally register action in express
-        this.express[actionMetadata.type.toLowerCase()](...[
-            route,
+
+        const router: any = actionMetadata.controllerMetadata.router = actionMetadata.controllerMetadata.router || Router();
+        const routePrefix = `${this.routePrefix}/`;
+        const routex = `${actionMetadata.controllerMetadata.route || ""}`;
+        let routerRoute = `${routePrefix}${routex}`;
+
+        routerRoute = routerRoute.replace(/\/\//g, "/");
+
+        if (!routerRoute.startsWith("/")) {
+            routerRoute = "/" + routerRoute;
+        }
+
+        router[actionMetadata.type.toLowerCase()](...[
+            actionMetadata.route,
             ...wrappedFuncs
         ]);
+
+        this.express.use(routerRoute, router);
+
+        // finally register action in express
+        /*this.express[actionMetadata.type.toLowerCase()](...[
+            route,
+            ...wrappedFuncs
+        ]);*/
     }
 
     /**

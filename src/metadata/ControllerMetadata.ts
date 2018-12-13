@@ -1,9 +1,9 @@
-import {ActionMetadata} from "./ActionMetadata";
-import {ControllerMetadataArgs} from "./args/ControllerMetadataArgs";
-import {UseMetadata} from "./UseMetadata";
-import {getFromContainer} from "../container";
-import {ResponseHandlerMetadata} from "./ResponseHandleMetadata";
-import {InterceptorMetadata} from "./InterceptorMetadata";
+import { getFromContainer } from "../container";
+import { ActionMetadata } from "./ActionMetadata";
+import { ControllerMetadataArgs } from "./args/ControllerMetadataArgs";
+import { InterceptorMetadata } from "./InterceptorMetadata";
+import { ResponseHandlerMetadata } from "./ResponseHandleMetadata";
+import { UseMetadata } from "./UseMetadata";
 
 /**
  * Controller metadata.
@@ -32,7 +32,7 @@ export class ControllerMetadata {
     /**
      * Controller type. Can be default or json-typed. Json-typed controllers operate with json requests and responses.
      */
-    type: "default"|"json";
+    type: "default" | "json";
 
     /**
      * Middleware "use"-s applied to a whole controller.
@@ -57,7 +57,7 @@ export class ControllerMetadata {
     // -------------------------------------------------------------------------
     // Constructor
     // -------------------------------------------------------------------------
-    
+
     constructor(args: ControllerMetadataArgs) {
         this.target = args.target;
         this.route = args.route;
@@ -89,4 +89,5 @@ export class ControllerMetadata {
         this.authorizedRoles = [].concat((authorizedHandler && authorizedHandler.value) || []);
     }
 
+    router?: any;
 }

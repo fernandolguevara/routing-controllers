@@ -322,7 +322,7 @@ describe("controller methods", () => {
                 expect(contentType).to.match(/text\/plain/);
             });
             expect(typeof response.body).to.equals("string");
-            expect(response.body).to.match(/UnauthorizedError.HttpError/);
+            expect(response.body).to.match(/UnauthorizedError/);
         });
     });
 

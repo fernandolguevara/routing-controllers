@@ -167,25 +167,35 @@ export class ExpressDriver extends BaseDriver {
 
         console.log("new route: ", route);
 
-        const asd = [
+        const wrappedFuncs = [
             ...beforeMiddlewares,
             ...defaultMiddlewares,
             routeHandler,
             ...afterMiddlewares
         ].map((middleware: any) => {
-            return (req: any, res: any, next: NextFunction) => {
+            const call = (args: any[]) => {
                 console.log("executing ", middleware.name);
-                const result = middleware(req, res, next);
+                const result = middleware(...args);
                 console.log("end ", middleware.name);
                 console.log("result ", result);
                 return result;
             };
+
+            if (middleware.length === 3) {
+                return (req: any, res: any, next: NextFunction) => {
+                    return call([req, res, next]);
+                };
+            } else {
+                return (err: any, req: any, res: any, next: NextFunction) => {
+                    return call([err, req, res, next]);
+                };
+            }
         });
 
         // finally register action in express
         this.express[actionMetadata.type.toLowerCase()](...[
             route,
-            ...asd
+            ...wrappedFuncs
         ]);
     }
 

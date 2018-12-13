@@ -175,7 +175,7 @@ class Gulpfile {
             "./build/compiled/test/functional/**/*.js",
             "./build/compiled/test/issues/**/*.js",
         ])
-            .pipe(mocha({ inspect: true }))
+            .pipe(mocha())
             .pipe(istanbul.writeReports());
     }
 

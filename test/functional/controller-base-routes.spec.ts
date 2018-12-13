@@ -1,15 +1,15 @@
 import "reflect-metadata";
-import {createExpressServer, createKoaServer, getMetadataArgsStorage} from "../../src/index";
-import {assertRequest} from "./test-utils";
-import {Controller} from "../../src/decorator/Controller";
-import {Get} from "../../src/decorator/Get";
+import { createExpressServer, createKoaServer, getMetadataArgsStorage } from "../../src/index";
+import { assertRequest } from "./test-utils";
+import { Controller } from "../../src/decorator/Controller";
+import { Get } from "../../src/decorator/Get";
 const expect = require("chakram").expect;
 
 describe("controller > base routes functionality", () => {
     before(() => {
         // reset metadata args storage
         getMetadataArgsStorage().reset();
-
+        
         @Controller("/posts")
         class PostController {
             @Get("/")
@@ -79,5 +79,5 @@ describe("controller > base routes functionality", () => {
             expect(response).to.have.status(404);
         });
     });
-    
+
 });

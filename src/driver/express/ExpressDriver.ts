@@ -209,7 +209,10 @@ export class ExpressDriver extends BaseDriver {
             ...wrappedFuncs
         ]);
 
-        this.express.use(routerRoute, router);
+        if (!router.notInExpress) {
+            router.notInExpress = true;
+            this.express.use(routerRoute, router);
+        }
 
         // finally register action in express
         /*this.express[actionMetadata.type.toLowerCase()](...[

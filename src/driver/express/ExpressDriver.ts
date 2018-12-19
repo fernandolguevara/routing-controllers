@@ -165,8 +165,6 @@ export class ExpressDriver extends BaseDriver {
             return executeCallback({ request, response, next });
         };
 
-        console.log("new route: ", route);
-
         const wrappedFuncs = [
             ...beforeMiddlewares,
             ...defaultMiddlewares,
@@ -174,10 +172,7 @@ export class ExpressDriver extends BaseDriver {
             ...afterMiddlewares
         ].map((middleware: any) => {
             const call = (args: any[]) => {
-                console.log("executing ", middleware.name);
                 const result = middleware(...args);
-                console.log("end ", middleware.name);
-                console.log("result ", result);
                 return result;
             };
 
@@ -192,33 +187,28 @@ export class ExpressDriver extends BaseDriver {
             }
         });
 
-
-        const router: any = actionMetadata.controllerMetadata.router = actionMetadata.controllerMetadata.router || Router();
-        const routePrefix = `${this.routePrefix}/`;
-        const routex = `${actionMetadata.controllerMetadata.route || ""}`;
-        let routerRoute = `${routePrefix}${routex}`;
-
-        routerRoute = routerRoute.replace(/\/\//g, "/");
-
-        if (!routerRoute.startsWith("/")) {
-            routerRoute = "/" + routerRoute;
-        }
+        const router: any = actionMetadata.controllerMetadata.router || Router();
 
         router[actionMetadata.type.toLowerCase()](...[
             actionMetadata.route,
             ...wrappedFuncs
         ]);
 
-        if (!router.notInExpress) {
-            router.notInExpress = true;
+        // finally register action in express with router!
+        if (!actionMetadata.controllerMetadata.router) {
+            actionMetadata.controllerMetadata.router = router;
+            const routePrefix = `${this.routePrefix}/`;
+            const routex = `${actionMetadata.controllerMetadata.route || ""}`;
+            let routerRoute = `${routePrefix}${routex}`;
+
+            routerRoute = routerRoute.replace(/\/\//g, "/");
+
+            if (!routerRoute.startsWith("/")) {
+                routerRoute = "/" + routerRoute;
+            }
+
             this.express.use(routerRoute, router);
         }
-
-        // finally register action in express
-        /*this.express[actionMetadata.type.toLowerCase()](...[
-            route,
-            ...wrappedFuncs
-        ]);*/
     }
 
     /**

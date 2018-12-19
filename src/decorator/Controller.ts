@@ -1,4 +1,5 @@
-import {getMetadataArgsStorage} from "../index";
+import { getMetadataArgsStorage } from "../index";
+import { isArray } from "util";
 
 /**
  * Defines a class as a controller.
@@ -7,12 +8,16 @@ import {getMetadataArgsStorage} from "../index";
  *
  * @param baseRoute Extra path you can apply as a base route to all controller actions
  */
-export function Controller(baseRoute?: string): Function {
+export function Controller(baseRoute?: string | string[]): Function {
     return function (object: Function) {
-        getMetadataArgsStorage().controllers.push({
-            type: "default",
-            target: object,
-            route: baseRoute
+        const baseRoutes = !isArray(baseRoute) ? [baseRoute] : baseRoute;
+
+        baseRoutes.forEach(entry => {
+            getMetadataArgsStorage().controllers.push({
+                type: "default",
+                target: object,
+                route: entry
+            });
         });
     };
 }

@@ -1,14 +1,14 @@
 import "reflect-metadata";
-import {JsonController} from "../../src/decorator/JsonController";
-import {Get} from "../../src/decorator/Get";
-import {Post} from "../../src/decorator/Post";
-import {Method} from "../../src/decorator/Method";
-import {Head} from "../../src/decorator/Head";
-import {Delete} from "../../src/decorator/Delete";
-import {Patch} from "../../src/decorator/Patch";
-import {Put} from "../../src/decorator/Put";
-import {createExpressServer, createKoaServer, getMetadataArgsStorage} from "../../src/index";
-import {assertRequest} from "./test-utils";
+import { JsonController } from "../../src/decorator/JsonController";
+import { Get } from "../../src/decorator/Get";
+import { Post } from "../../src/decorator/Post";
+import { Method } from "../../src/decorator/Method";
+import { Head } from "../../src/decorator/Head";
+import { Delete } from "../../src/decorator/Delete";
+import { Patch } from "../../src/decorator/Patch";
+import { Put } from "../../src/decorator/Put";
+import { createExpressServer, createKoaServer, getMetadataArgsStorage } from "../../src/index";
+import { assertRequest } from "./test-utils";
 const chakram = require("chakram");
 const expect = chakram.expect;
 
@@ -18,6 +18,23 @@ describe("json-controller methods", () => {
 
         // reset metadata args storage
         getMetadataArgsStorage().reset();
+
+        @JsonController([
+            "/api/v1/users",
+            "/api/v2/users",
+        ])
+        class UserController {
+            @Get("/")
+            getAll() {
+                return [{
+                    id: 1,
+                    name: "Umed"
+                }, {
+                    id: 2,
+                    name: "Bakha"
+                }];
+            }
+        }
 
         @JsonController()
         class JsonUserController {
@@ -125,6 +142,34 @@ describe("json-controller methods", () => {
     before(done => koaApp = createKoaServer().listen(3002, done));
     after(done => koaApp.close(done));
 
+    describe("get should respond with proper status code, headers and body content & N routes", () => {
+        assertRequest([3001, 3002], "get", "api/v1/users", response => {
+            expect(response).to.have.status(200);
+            expect(response).to.have.header("content-type", "application/json; charset=utf-8");
+            expect(response.body).to.be.instanceOf(Array);
+            expect(response.body).to.be.eql([{
+                id: 1,
+                name: "Umed"
+            }, {
+                id: 2,
+                name: "Bakha"
+            }]);
+        });
+
+        assertRequest([3001, 3002], "get", "api/v2/users", response => {
+            expect(response).to.have.status(200);
+            expect(response).to.have.header("content-type", "application/json; charset=utf-8");
+            expect(response.body).to.be.instanceOf(Array);
+            expect(response.body).to.be.eql([{
+                id: 1,
+                name: "Umed"
+            }, {
+                id: 2,
+                name: "Bakha"
+            }]);
+        });
+    });
+
     describe("get should respond with proper status code, headers and body content", () => {
         assertRequest([3001, 3002], "get", "users", response => {
             expect(response).to.have.status(200);
@@ -139,7 +184,7 @@ describe("json-controller methods", () => {
             }]);
         });
     });
-    
+
     describe("post respond with proper status code, headers and body content", () => {
         assertRequest([3001, 3002], "post", "users", response => {
             expect(response).to.have.status(200);
@@ -149,7 +194,7 @@ describe("json-controller methods", () => {
             });
         });
     });
-    
+
     describe("put respond with proper status code, headers and body content", () => {
         assertRequest([3001, 3002], "put", "users", response => {
             expect(response).to.have.status(200);
@@ -159,7 +204,7 @@ describe("json-controller methods", () => {
             });
         });
     });
-    
+
     describe("patch respond with proper status code, headers and body content", () => {
         assertRequest([3001, 3002], "patch", "users", response => {
             expect(response).to.have.status(200);
@@ -169,7 +214,7 @@ describe("json-controller methods", () => {
             });
         });
     });
-    
+
     describe("delete respond with proper status code, headers and body content", () => {
         assertRequest([3001, 3002], "delete", "users", response => {
             expect(response).to.have.status(200);
